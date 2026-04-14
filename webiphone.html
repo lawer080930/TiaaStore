@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TiaaStore iPhone</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top, #1e293b, #020617);
+  color: white;
+}
+
+/* HEADER */
+header {
+  backdrop-filter: blur(15px);
+  background: rgba(255,255,255,0.05);
+  padding: 15px;
+  text-align: center;
+}
+
+.logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  background: linear-gradient(90deg, gold, #fff);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* SEARCH */
+.search-box{
+  padding:15px;
+  text-align:center;
+}
+
+.search-box input{
+  width:90%;
+  max-width:400px;
+  padding:12px;
+  border-radius:30px;
+  border:none;
+  background: rgba(255,255,255,0.1);
+  color:white;
+}
+
+/* GRID */
+.products {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px,1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+/* CARD */
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 20px;
+  padding: 15px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.card:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(255,215,0,0.3);
+}
+
+.card img {
+  width: 100%;
+  height: 180px;
+  object-fit: contain;
+}
+
+/* SPESIFIKASI */
+.spec {
+  font-size: 12px;
+  opacity: 0.8;
+  margin: 8px 0;
+}
+
+/* PRICE */
+.price {
+  color: gold;
+  font-weight: bold;
+}
+
+/* FORM */
+select, input, button {
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  background: linear-gradient(90deg, gold, #ffd700);
+  color: black;
+  font-weight: bold;
+}
+
+/* MODAL */
+.modal {
+  position: fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background: rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-box {
+  background:#020617;
+  padding:20px;
+  border-radius:20px;
+  width:90%;
+  max-width:400px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">TiaaStore</div>
+</header>
+
+<div class="search-box">
+  <input type="text" id="search" placeholder="Cari iPhone..." onkeyup="searchProduct()">
+</div>
+
+<section class="products" id="product-list"></section>
+
+<!-- CHECKOUT -->
+<div class="modal" id="checkoutModal">
+  <div class="modal-box">
+    <h3>Checkout</h3>
+
+    <input id="nama" placeholder="Nama">
+    <input id="alamat" placeholder="Alamat">
+
+    <select id="storage" onchange="updatePrice()">
+      <option value="128">128GB</option>
+      <option value="256">256GB</option>
+      <option value="512">512GB</option>
+    </select>
+
+    <select id="warna">
+      <option>Hitam</option>
+      <option>Putih</option>
+      <option>Biru</option>
+      <option>Gold</option>
+    </select>
+
+    <p id="total"></p>
+
+    <button onclick="kirimWA()">Checkout WhatsApp</button>
+    <button onclick="tutup()" style="background:red;">Batal</button>
+  </div>
+</div>
+
+<script>
+
+// DATA PRODUK (REAL IMAGE)
+const products = [
+  {
+    name:"iPhone 11",
+    base:6999000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-11.jpg",
+    spec:"6.1\" Liquid Retina • A13 Bionic • Dual Camera"
+  },
+  {
+    name:"iPhone 12",
+    base:8499000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-12.jpg",
+    spec:"6.1\" OLED • A14 • 5G • MagSafe"
+  },
+  {
+    name:"iPhone 13",
+    base:10499000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-13.jpg",
+    spec:"A15 Bionic • Cinematic Mode"
+  },
+  {
+    name:"iPhone 13 Pro",
+    base:13499000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-13-pro.jpg",
+    spec:"120Hz • Triple Camera"
+  },
+  {
+    name:"iPhone 14",
+    base:11999000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-14.jpg",
+    spec:"A15 • Crash Detection"
+  },
+  {
+    name:"iPhone 14 Pro",
+    base:15999000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-14-pro.jpg",
+    spec:"Dynamic Island • 48MP"
+  },
+  {
+    name:"iPhone 15",
+    base:13999000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15.jpg",
+    spec:"USB-C • A16"
+  },
+  {
+    name:"iPhone 15 Pro Max",
+    base:19999000,
+    img:"https://fdn2.gsmarena.com/vv/bigpic/apple-iphone-15-pro-max.jpg",
+    spec:"A17 Pro • Titanium"
+  }
+];
+
+let selected = null;
+const container = document.getElementById("product-list");
+
+// HARGA
+function getPrice(base, storage){
+  if(storage==256) return base+1500000;
+  if(storage==512) return base+3000000;
+  return base;
+}
+
+// RENDER
+function render(list){
+  container.innerHTML="";
+  list.forEach(p=>{
+    const el=document.createElement("div");
+    el.className="card";
+
+    el.innerHTML=`
+      <img src="${p.img}" loading="lazy"
+      onerror="this.src='https://dummyimage.com/400x400/000/fff&text=iPhone'">
+      <h3>${p.name}</h3>
+      <div class="spec">${p.spec}</div>
+
+      <select class="storage">
+        <option value="128">128GB</option>
+        <option value="256">256GB</option>
+        <option value="512">512GB</option>
+      </select>
+
+      <p class="price">Rp ${p.base.toLocaleString()}</p>
+    `;
+
+    const storage=el.querySelector(".storage");
+    const price=el.querySelector(".price");
+
+    storage.onchange=()=>{
+      price.innerText="Rp "+getPrice(p.base, storage.value).toLocaleString();
+    };
+
+    const btn=document.createElement("button");
+    btn.innerText="Beli";
+    btn.onclick=()=>{
+      selected=p;
+      document.getElementById("storage").value=storage.value;
+      buka();
+    };
+
+    el.appendChild(btn);
+    container.appendChild(el);
+  });
+}
+
+// SEARCH
+function searchProduct(){
+  const keyword=document.getElementById("search").value.toLowerCase();
+  const filtered=products.filter(p=>p.name.toLowerCase().includes(keyword));
+  render(filtered);
+}
+
+// MODAL
+function buka(){
+  updatePrice();
+  document.getElementById("checkoutModal").style.display="flex";
+}
+
+function tutup(){
+  document.getElementById("checkoutModal").style.display="none";
+}
+
+function updatePrice(){
+  const storage=document.getElementById("storage").value;
+  const harga=getPrice(selected.base, storage);
+  document.getElementById("total").innerText="Total: Rp "+harga.toLocaleString();
+}
+
+// WA
+function kirimWA(){
+  const nama=document.getElementById("nama").value;
+  const alamat=document.getElementById("alamat").value;
+  const storage=document.getElementById("storage").value;
+  const warna=document.getElementById("warna").value;
+  const harga=getPrice(selected.base, storage);
+
+  const pesan=`Halo Admin TiaaStore 👋
+
+Saya ingin membeli:
+
+📱 ${selected.name}
+💰 Rp ${harga.toLocaleString()}
+
+📦 Detail:
+- Storage: ${storage}GB
+- Warna: ${warna}
+
+👤 ${nama}
+📍 ${alamat}`;
+
+  window.location.href=`https://wa.me/62882017112759?text=${encodeURIComponent(pesan)}`;
+}
+
+// INIT
+render(products);
+
+</script>
+
+</body>
+</html>
